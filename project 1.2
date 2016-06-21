@@ -1,0 +1,46 @@
+
+load_data = load '/Titanic_Data/' Using PigStorage(',');
+
+
+1. In this problem statement, we will find the average fare of each class.
+
+gen_class_fare = foreach  load_data generate $2 ,$9;  
+
+group_byclass = group gen_class_fare by $0;
+
+avg_fare = foreach group_byclass generate group,AVG(gen_class_fare.$1);
+
+dump avg_fare; 
+
+2. In this problem statement, we will find the number of people alive in each class and embarked at Southampton.
+
+gen_alive = foreach load_data generate $0,$1,$2,$11;
+
+filter_alive_embark = filter gen_alive by $1 == '0' and $3 matches 'S';
+
+group_into_class = group filter_alive_embark by $2;
+
+count_people =  foreach group_into_class  generate group, COUNT(filter_alive_embark.$0);
+
+dump count_people;
+
+3. In this problem statement, we will find out number of males and females who died in each class.
+
+
+gen_data = foreach load_data generate $0,$1,$2,$4;
+
+filter_dead = filter gen_data by $1 == '1';
+
+SPLIT filter_dead INTO filter_male  if $3 matches 'male',
+filter_female if $3 matches 'female';
+
+group_by_class_male = group filter_male by $2 ;
+
+group_by_class_female = group filter_female by $2 ;
+
+count_male = foreach  group_by_class_male generate group,COUNT(filter_male.$0);
+
+count_female = foreach  group_by_class_female generate group,COUNT(filter_female.$0);
+
+dump count_male;
+dump count_female;
